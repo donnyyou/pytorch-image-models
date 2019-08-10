@@ -1,7 +1,7 @@
 """ Generic EfficientNets
 
 A generic class with building blocks to support a variety of models with efficient architectures:
-* EfficientNet (B0-B5)
+* EfficientNet (B0-B7)
 * MixNet (Small, Medium, and Large)
 * MnasNet B1, A1 (SE), Small
 * MobileNet V1, V2, and V3
@@ -84,27 +84,40 @@ default_cfgs = {
         url='', input_size=(3, 380, 380), pool_size=(12, 12), crop_pct=0.922),
     'efficientnet_b5': _cfg(
         url='', input_size=(3, 456, 456), pool_size=(15, 15), crop_pct=0.934),
+    'efficientnet_b6': _cfg(
+        url='', input_size=(3, 528, 528), pool_size=(17, 17), crop_pct=0.942),
+    'efficientnet_b7': _cfg(
+        url='', input_size=(3, 600, 600), pool_size=(19, 19), crop_pct=0.949),
     'tf_efficientnet_b0': _cfg(
-        url='https://github.com/rwightman/pytorch-image-models/releases/download/v0.1-weights/tf_efficientnet_b0-0af12548.pth',
+        url='https://github.com/rwightman/pytorch-image-models/releases/download/v0.1-weights/tf_efficientnet_b0_aa-827b6e33.pth',
         input_size=(3, 224, 224)),
     'tf_efficientnet_b1': _cfg(
-        url='https://github.com/rwightman/pytorch-image-models/releases/download/v0.1-weights/tf_efficientnet_b1-5c1377c4.pth',
+        url='https://github.com/rwightman/pytorch-image-models/releases/download/v0.1-weights/tf_efficientnet_b1_aa-ea7a6ee0.pth',
         input_size=(3, 240, 240), pool_size=(8, 8), crop_pct=0.882),
     'tf_efficientnet_b2': _cfg(
-        url='https://github.com/rwightman/pytorch-image-models/releases/download/v0.1-weights/tf_efficientnet_b2-e393ef04.pth',
+        url='https://github.com/rwightman/pytorch-image-models/releases/download/v0.1-weights/tf_efficientnet_b2_aa-60c94f97.pth',
         input_size=(3, 260, 260), pool_size=(9, 9), crop_pct=0.890),
     'tf_efficientnet_b3': _cfg(
-        url='https://github.com/rwightman/pytorch-image-models/releases/download/v0.1-weights/tf_efficientnet_b3-e3bd6955.pth',
+        url='https://github.com/rwightman/pytorch-image-models/releases/download/v0.1-weights/tf_efficientnet_b3_aa-84b4657e.pth',
         input_size=(3, 300, 300), pool_size=(10, 10), crop_pct=0.904),
     'tf_efficientnet_b4': _cfg(
-        url='https://github.com/rwightman/pytorch-image-models/releases/download/v0.1-weights/tf_efficientnet_b4-74ee3bed.pth',
+        url='https://github.com/rwightman/pytorch-image-models/releases/download/v0.1-weights/tf_efficientnet_b4_aa-818f208c.pth',
         input_size=(3, 380, 380), pool_size=(12, 12), crop_pct=0.922),
     'tf_efficientnet_b5': _cfg(
-        url='https://github.com/rwightman/pytorch-image-models/releases/download/v0.1-weights/tf_efficientnet_b5-c6949ce9.pth',
+        url='https://github.com/rwightman/pytorch-image-models/releases/download/v0.1-weights/tf_efficientnet_b5_aa-99018a74.pth',
         input_size=(3, 456, 456), pool_size=(15, 15), crop_pct=0.934),
-    'mixnet_s': _cfg(url=''),
-    'mixnet_m': _cfg(url=''),
-    'mixnet_l': _cfg(url=''),
+    'tf_efficientnet_b6': _cfg(
+        url='https://github.com/rwightman/pytorch-image-models/releases/download/v0.1-weights/tf_efficientnet_b6_aa-80ba17e4.pth',
+        input_size=(3, 528, 528), pool_size=(17, 17), crop_pct=0.942),
+    'tf_efficientnet_b7': _cfg(
+        url='https://github.com/rwightman/pytorch-image-models/releases/download/v0.1-weights/tf_efficientnet_b7_aa-076e3472.pth',
+        input_size=(3, 600, 600), pool_size=(19, 19), crop_pct=0.949),
+    'mixnet_s': _cfg(
+        url='https://github.com/rwightman/pytorch-image-models/releases/download/v0.1-weights/mixnet_s-a907afbc.pth'),
+    'mixnet_m': _cfg(
+        url='https://github.com/rwightman/pytorch-image-models/releases/download/v0.1-weights/mixnet_m-4647fc68.pth'),
+    'mixnet_l': _cfg(
+        url='https://github.com/rwightman/pytorch-image-models/releases/download/v0.1-weights/mixnet_l-5a9a2ed8.pth'),
     'tf_mixnet_s': _cfg(
         url='https://github.com/rwightman/pytorch-image-models/releases/download/v0.1-weights/tf_mixnet_s-89d3354b.pth'),
     'tf_mixnet_m': _cfg(
@@ -269,13 +282,6 @@ def _decode_block_str(block_str, depth_multiplier=1.0):
     # scaled by depth_multiplier
     num_repeat = int(math.ceil(num_repeat * depth_multiplier))
     return [deepcopy(block_args) for _ in range(num_repeat)]
-
-
-def _decode_arch_args(string_list):
-    block_args = []
-    for block_str in string_list:
-        block_args.append(_decode_block_str(block_str))
-    return block_args
 
 
 def _decode_arch_def(arch_def, depth_multiplier=1.0):
@@ -650,7 +656,7 @@ class GenEfficientNet(nn.Module):
       * FBNet A, B, and C
       * ChamNet (arch details are murky)
       * Single-Path NAS Pixel1
-      * EfficientNet B0-B5
+      * EfficientNet B0-B7
       * MixNet S, M, L
     """
 
@@ -769,8 +775,6 @@ def _gen_mnasnet_a1(channel_multiplier, num_classes=1000, **kwargs):
         num_classes=num_classes,
         stem_size=32,
         channel_multiplier=channel_multiplier,
-        channel_divisor=8,
-        channel_min=None,
         bn_args=_resolve_bn_args(kwargs),
         **kwargs
     )
@@ -807,8 +811,6 @@ def _gen_mnasnet_b1(channel_multiplier, num_classes=1000, **kwargs):
         num_classes=num_classes,
         stem_size=32,
         channel_multiplier=channel_multiplier,
-        channel_divisor=8,
-        channel_min=None,
         bn_args=_resolve_bn_args(kwargs),
         **kwargs
     )
@@ -838,8 +840,6 @@ def _gen_mnasnet_small(channel_multiplier, num_classes=1000, **kwargs):
         num_classes=num_classes,
         stem_size=8,
         channel_multiplier=channel_multiplier,
-        channel_divisor=8,
-        channel_min=None,
         bn_args=_resolve_bn_args(kwargs),
         **kwargs
     )
@@ -864,8 +864,6 @@ def _gen_mobilenet_v1(channel_multiplier, num_classes=1000, **kwargs):
         stem_size=32,
         num_features=1024,
         channel_multiplier=channel_multiplier,
-        channel_divisor=8,
-        channel_min=None,
         bn_args=_resolve_bn_args(kwargs),
         act_fn=F.relu6,
         head_conv='none',
@@ -893,8 +891,6 @@ def _gen_mobilenet_v2(channel_multiplier, num_classes=1000, **kwargs):
         num_classes=num_classes,
         stem_size=32,
         channel_multiplier=channel_multiplier,
-        channel_divisor=8,
-        channel_min=None,
         bn_args=_resolve_bn_args(kwargs),
         act_fn=F.relu6,
         **kwargs
@@ -932,8 +928,6 @@ def _gen_mobilenet_v3(channel_multiplier, num_classes=1000, **kwargs):
         num_classes=num_classes,
         stem_size=16,
         channel_multiplier=channel_multiplier,
-        channel_divisor=8,
-        channel_min=None,
         bn_args=_resolve_bn_args(kwargs),
         act_fn=hard_swish,
         se_gate_fn=hard_sigmoid,
@@ -967,8 +961,6 @@ def _gen_chamnet_v1(channel_multiplier, num_classes=1000, **kwargs):
         stem_size=32,
         num_features=1280,  # no idea what this is? try mobile/mnasnet default?
         channel_multiplier=channel_multiplier,
-        channel_divisor=8,
-        channel_min=None,
         bn_args=_resolve_bn_args(kwargs),
         **kwargs
     )
@@ -998,8 +990,6 @@ def _gen_chamnet_v2(channel_multiplier, num_classes=1000, **kwargs):
         stem_size=32,
         num_features=1280,  # no idea what this is? try mobile/mnasnet default?
         channel_multiplier=channel_multiplier,
-        channel_divisor=8,
-        channel_min=None,
         bn_args=_resolve_bn_args(kwargs),
         **kwargs
     )
@@ -1030,8 +1020,6 @@ def _gen_fbnetc(channel_multiplier, num_classes=1000, **kwargs):
         stem_size=16,
         num_features=1984,  # paper suggests this, but is not 100% clear
         channel_multiplier=channel_multiplier,
-        channel_divisor=8,
-        channel_min=None,
         bn_args=_resolve_bn_args(kwargs),
         **kwargs
     )
@@ -1067,8 +1055,6 @@ def _gen_spnasnet(channel_multiplier, num_classes=1000, **kwargs):
         num_classes=num_classes,
         stem_size=32,
         channel_multiplier=channel_multiplier,
-        channel_divisor=8,
-        channel_min=None,
         bn_args=_resolve_bn_args(kwargs),
         **kwargs
     )
@@ -1113,8 +1099,6 @@ def _gen_efficientnet(channel_multiplier=1.0, depth_multiplier=1.0, num_classes=
         num_classes=num_classes,
         stem_size=32,
         channel_multiplier=channel_multiplier,
-        channel_divisor=8,
-        channel_min=None,
         num_features=num_features,
         bn_args=_resolve_bn_args(kwargs),
         act_fn=swish,
@@ -1150,8 +1134,6 @@ def _gen_mixnet_s(channel_multiplier=1.0, num_classes=1000, **kwargs):
         stem_size=16,
         num_features=1536,
         channel_multiplier=channel_multiplier,
-        channel_divisor=8,
-        channel_min=None,
         bn_args=_resolve_bn_args(kwargs),
         act_fn=F.relu,
         **kwargs
@@ -1186,8 +1168,6 @@ def _gen_mixnet_m(channel_multiplier=1.0, num_classes=1000, **kwargs):
         stem_size=24,
         num_features=1536,
         channel_multiplier=channel_multiplier,
-        channel_divisor=8,
-        channel_min=None,
         bn_args=_resolve_bn_args(kwargs),
         act_fn=F.relu,
         **kwargs
@@ -1501,6 +1481,37 @@ def efficientnet_b5(pretrained=False, num_classes=1000, in_chans=3, **kwargs):
     return model
 
 
+
+@register_model
+def efficientnet_b6(pretrained=False, num_classes=1000, in_chans=3, **kwargs):
+    """ EfficientNet-B6 """
+    # NOTE for train, drop_rate should be 0.5
+    #kwargs['drop_connect_rate'] = 0.2  # set when training, TODO add as cmd arg
+    default_cfg = default_cfgs['efficientnet_b6']
+    model = _gen_efficientnet(
+        channel_multiplier=1.8, depth_multiplier=2.6,
+        num_classes=num_classes, in_chans=in_chans, **kwargs)
+    model.default_cfg = default_cfg
+    if pretrained:
+        load_pretrained(model, default_cfg, num_classes, in_chans)
+    return model
+
+
+@register_model
+def efficientnet_b7(pretrained=False, num_classes=1000, in_chans=3, **kwargs):
+    """ EfficientNet-B7 """
+    # NOTE for train, drop_rate should be 0.5
+    #kwargs['drop_connect_rate'] = 0.2  # set when training, TODO add as cmd arg
+    default_cfg = default_cfgs['efficientnet_b7']
+    model = _gen_efficientnet(
+        channel_multiplier=2.0, depth_multiplier=3.1,
+        num_classes=num_classes, in_chans=in_chans, **kwargs)
+    model.default_cfg = default_cfg
+    if pretrained:
+        load_pretrained(model, default_cfg, num_classes, in_chans)
+    return model
+
+
 @register_model
 def tf_efficientnet_b0(pretrained=False, num_classes=1000, in_chans=3, **kwargs):
     """ EfficientNet-B0. Tensorflow compatible variant  """
@@ -1592,15 +1603,47 @@ def tf_efficientnet_b5(pretrained=False, num_classes=1000, in_chans=3, **kwargs)
 
 
 @register_model
+def tf_efficientnet_b6(pretrained=False, num_classes=1000, in_chans=3, **kwargs):
+    """ EfficientNet-B6. Tensorflow compatible variant """
+    # NOTE for train, drop_rate should be 0.5
+    default_cfg = default_cfgs['tf_efficientnet_b6']
+    kwargs['bn_eps'] = _BN_EPS_TF_DEFAULT
+    kwargs['pad_type'] = 'same'
+    model = _gen_efficientnet(
+        channel_multiplier=1.8, depth_multiplier=2.6,
+        num_classes=num_classes, in_chans=in_chans, **kwargs)
+    model.default_cfg = default_cfg
+    if pretrained:
+        load_pretrained(model, default_cfg, num_classes, in_chans)
+    return model
+
+
+@register_model
+def tf_efficientnet_b7(pretrained=False, num_classes=1000, in_chans=3, **kwargs):
+    """ EfficientNet-B7. Tensorflow compatible variant """
+    # NOTE for train, drop_rate should be 0.5
+    default_cfg = default_cfgs['tf_efficientnet_b7']
+    kwargs['bn_eps'] = _BN_EPS_TF_DEFAULT
+    kwargs['pad_type'] = 'same'
+    model = _gen_efficientnet(
+        channel_multiplier=2.0, depth_multiplier=3.1,
+        num_classes=num_classes, in_chans=in_chans, **kwargs)
+    model.default_cfg = default_cfg
+    if pretrained:
+        load_pretrained(model, default_cfg, num_classes, in_chans)
+    return model
+
+
+@register_model
 def mixnet_s(pretrained=False, num_classes=1000, in_chans=3, **kwargs):
     """Creates a MixNet Small model.
     """
-    default_cfg = default_cfgs['mixnet_m']
+    default_cfg = default_cfgs['mixnet_s']
     model = _gen_mixnet_s(
         channel_multiplier=1.0, num_classes=num_classes, in_chans=in_chans, **kwargs)
     model.default_cfg = default_cfg
-    #if pretrained:
-    #    load_pretrained(model, default_cfg, num_classes, in_chans)
+    if pretrained:
+        load_pretrained(model, default_cfg, num_classes, in_chans)
     return model
 
 
@@ -1612,8 +1655,8 @@ def mixnet_m(pretrained=False, num_classes=1000, in_chans=3, **kwargs):
     model = _gen_mixnet_m(
         channel_multiplier=1.0, num_classes=num_classes, in_chans=in_chans, **kwargs)
     model.default_cfg = default_cfg
-    #if pretrained:
-    #    load_pretrained(model, default_cfg, num_classes, in_chans)
+    if pretrained:
+        load_pretrained(model, default_cfg, num_classes, in_chans)
     return model
 
 
